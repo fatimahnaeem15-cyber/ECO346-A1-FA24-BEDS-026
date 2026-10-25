@@ -24,7 +24,7 @@ lit <- merged[which(merged$prov_code == 3 & merged$urban_rural == 1 &
                     merged$age >= 10 & merged$age <= 64 & !is.na(merged$literate)), ]
 
 # Five-year bands 10-14, ..., 60-64, each plotted at its midpoint (12, 17, ..., 62)
-lit$band  <- (lit$age - 10) %/% 5
+lit$band  <- (lit$age - 10) %/% 5            # 0, 1, ..., 10
 lit$start <- 10 + 5 * lit$band
 lit$mid   <- lit$start + 2
 lit$sex_f <- ifelse(lit$sex == 1, "Men", "Women")
@@ -33,16 +33,16 @@ lit$sex_f <- ifelse(lit$sex == 1, "Men", "Women")
 cells <- lit |>
   group_by(start, mid, sex_f) |>
   summarise(n = n(), rate = 100 * weighted.mean(literate, hhweight), .groups = "drop") |>
-  mutate(thin = n < 30)
+  mutate(thin = n < 30)                       # thin cell: fewer than 30 observations
 
 # Wide band table for the README: one row per band
 w <- subset(cells, sex_f == "Women"); m <- subset(cells, sex_f == "Men")
-tab <- data.frame(band       = paste0(w$start, "-", w$start + 4),
-                  mid        = w$mid,
-                  n_women    = w$n,
-                  rate_women = round(w$rate, 1),
-                  n_men      = m$n,
-                  rate_men   = round(m$rate, 1))
+tab <- data.frame(band        = paste0(w$start, "-", w$start + 4),
+                  mid         = w$mid,
+                  n_women     = w$n,
+                  rate_women  = round(w$rate, 1),
+                  n_men       = m$n,
+                  rate_men    = round(m$rate, 1))
 tab$gap <- round(m$rate - w$rate, 1)
 write.csv(tab, "tables/band_table_R.csv", row.names = FALSE)
 print(tab)
@@ -54,12 +54,13 @@ cat("Women 55-59:", pick("55-59", "rate_women"), "| Men 55-59:", pick("55-59", "
 big <- tab[which.max(tab$gap), ]
 cat("Largest gap:", big$band, "=", sprintf("%.1f", big$gap), "points\n")
 cat("Sample size:", nrow(lit), "| smallest cell:", min(cells$n), "\n")
+# expect 7171, 28.0 / 59.5, 9.6 / 40.0, largest gap 30-34 = 42.5, smallest cell 77
 
 # The figure
-cols   <- c(Women = "#b5532a", Men = "#1f4e79")
-last   <- subset(cells, mid == max(mid))
-solid  <- subset(cells, !thin)
-hollow <- subset(cells, thin)
+cols  <- c(Women = "#b5532a", Men = "#1f4e79")
+last  <- subset(cells, mid == max(mid))                   # last point of each series
+solid <- subset(cells, !thin)
+hollow <- subset(cells, thin)                             # empty here, as no cell is thin
 
 cap <- paste0("Source: PSLM 2019-20, person file merged with household file. ",
               "Sample: persons aged 10-64 in rural Sindh with non-missing literacy (n = ",
