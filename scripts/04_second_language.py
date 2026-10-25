@@ -1,3 +1,5 @@
+cd "C:\Users\Ammy\Downloads\DVTE A1\ECO346-A1-FA24-BEDS-026"
+$py = @'
 """04_second_language.py -- Question 5: the Question 3 band table and figure, in Python.
 Variant 2 = Sindh rural (prov_code 3, urban_rural 1).
 Run from anywhere:  python scripts/04_second_language.py   (run 03_literacy.R first)
@@ -93,7 +95,8 @@ ax.text(big.mid + 1.5, (big.rate_men + big.rate_women) / 2,
         f"Largest gap, ages {big.band}:\n{big.gap:.1f} points",
         fontsize=10.5, va="center", color="0.15")
 
-# ggplot2 pads a y scale by 5% on each side; set the padded limits by hand so the figures match.
+# ggplot2 pads a y scale by 5% on each side and matplotlib does not set the same padding
+# when limits are given, so set the padded limits by hand to make the two figures match.
 ax.set_xlim(10, 70)
 ax.set_ylim(-5, 105)
 ax.set_xticks(range(12, 63, 5))
@@ -122,3 +125,7 @@ fig.text(0.01, 0.01, caption, fontsize=8.5, color="0.3", ha="left", va="bottom")
 fig.subplots_adjust(left=0.08, right=0.97, top=0.85, bottom=0.22)
 fig.savefig(ROOT / "figures" / "literacy_by_age_python.svg")
 print("Saved figures/literacy_by_age_python.svg")
+'@
+$pypath = Join-Path (Get-Location) "scripts\04_second_language.py"
+[System.IO.File]::WriteAllText($pypath, $py, (New-Object System.Text.UTF8Encoding($false)))
+(Get-Item $pypath).Length
